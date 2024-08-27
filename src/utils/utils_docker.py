@@ -46,7 +46,21 @@ class DockerContainerManager:
         except docker.errors.APIError as e:
             logger.error(f"Error pulling image: {e}")
             return None
+    def search_image_by_name(self, image_name):
+        """Searches for a Docker image by its name.
 
+        Args:
+            image_name (str): The name of the Docker image to search for.
+
+        Returns:
+            docker.models.images.Image: The Docker image object if found, or None if not found.
+        """
+        images = self.client.images.list()
+        for image in images:
+            if image_name in image.tags:
+                return image
+        logger.info(f"Image not found: {image_name}")
+        return None
     def list_all_images(self):
         """Lists all Docker images.
 
@@ -205,3 +219,18 @@ class DockerContainerManager:
         except docker.errors.APIError as e:
             logger.error(f"Error executing command in container: {e}")
             return None
+
+
+if __name__=="__main__":
+    """
+    Simply an unitest. Dont start the container from here.
+    """
+    client=DockerContainerManager()
+    client.list_all_images()
+    client.list_all_containers()
+    client.pull_image("iridium191/fbinfer:latest")
+    container=client.start_container_by_image_name("iridium191/fbinfer:latest")
+    
+    # Then we test the operation chain of fbinfer
+    output=client.exec_command_in_container(container,"whoami")
+    print(output)

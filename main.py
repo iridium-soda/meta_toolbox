@@ -1,8 +1,8 @@
 from loguru import logger
-from metagpt.tools.libs import fbinfer
 import asyncio
 from metagpt.roles.di.data_interpreter import DataInterpreter
 from src.utils.update_tools import update_tools
+import re
 
 async def main(requirement: str):
     role = DataInterpreter(tools=["Fbinfer"])   # 集成工具
@@ -11,10 +11,20 @@ async def main(requirement: str):
 if __name__ == "__main__":
     # Update tools to the libs
     update_tools()
-
-    # Open the src code
+    
+    # Import after all tools and denpendencies are updated
+    from metagpt.tools.libs import fbinfer
+    
+    # Load the src code
     with open("./test.c","r") as f:
         code=f.read()
-    logger.info(f"Read code from test.c:\n{code}")
-    requirement = "使用fbinfer扫描下面的代码,分析代码存在的漏洞:"+code
+        
+    # Escape the special characters
+    code=re.sub(r'(\\)', r'\\\\', code)
+    code = re.sub(r'(\n)', r'\\n', code)
+    code = re.sub(r'(\t)', r'\\t', code)
+    code = re.sub(r'(\0)', r'\\0', code)
+    
+    #logger.info(f"Read code from test.c:\n{code}")
+    requirement = "使用fbinfer扫描下面的代码:"+code
     asyncio.run(main(requirement))

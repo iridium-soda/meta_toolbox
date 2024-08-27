@@ -26,19 +26,23 @@ metagpt --init-config
 Edit config at `~/.metagpt/config2.yaml` refering https://docs.deepwisdom.ai/main/en/guide/get_started/configuration/llm_api_configuration.html
 
 ### 初始化
-将工具代码复制到metagpt库中。每次对工具代码进行更改都应该执行这个脚本：
-```shell
-source scripts/update_tools.sh
-```
+~~将工具代码复制到metagpt库中。每次对工具代码进行更改都应该执行这个脚本~~ 已经集成到代码中
+
 
 ## 运行
-由于操作docker需要sudo权限，需要在运行时对python附上sudo
+~~由于操作docker需要sudo权限，需要在运行时对python附上sudo~~
 
-在conda active环境下：
+运行docker和访问socket需要一定权限,可以按照下面的方式将当前用户添加到docker用户组(前提为掌握sudo权限)
+
+检查`docker`组是否存在:
 ```shell
-which python3
+groups
 ```
-拿到路径后：
+
+添加用户并重启docker
+```shell
+sudo usermod -aG docker $USER
+sudo systemctl restart docker
 ```
-sudo [path to python] script.py
-```
+
+检查能否直接使用.

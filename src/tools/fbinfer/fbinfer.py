@@ -1,4 +1,9 @@
-from src.utils.docker import DockerContainerManager
+import sys
+import os
+# sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))) # To Solve import error. It is ugly and may have unknpown impact.
+# You may remove it after testing
+import uuid
+from metagpt.tools.libs.utils.utils_docker import DockerContainerManager # Deploy阶段需要修改这个,开发测试阶段写utils.utils_docker
 from loguru import logger
 from metagpt.tools.tool_registry import register_tool
 import os  
@@ -51,8 +56,10 @@ class Fbinfer:
         if code_lang == "c":
             # Send the code to the container
             # Generate a random file name for the code
-            src_file_name="temp.c" # Local path
+            src_file_name=str(uuid.uuid4())+".c" # Local tempfile path. Use uuid to avoid conflict
             target_file_name = "/code.c" # path inside of container file
+            logger.debug(f"Code: {code}")
+            
             save_file(code,src_file_name)
             
             self.docker_client.send_file_to_container_by_container(self.container,src_file_name,target_file_name)
@@ -67,7 +74,7 @@ class Fbinfer:
         elif code_lang == "cpp":
             # Send the code to the container
             # Generate a random file name for the code
-            src_file_name="temp.cpp" # Local path
+            src_file_name=str(uuid.uuid4())+".cpp" # Local tempfile path. Use uuid to avoid conflict
             target_file_name = "code.cpp"
             save_file(code,src_file_name)
             
@@ -86,3 +93,22 @@ class Fbinfer:
                 f"Code language {code_lang} is not implemented in fbinfer"
             )
         return output
+
+if __name__=="__main__":
+    """
+    Simply an unitest. Dont start the container from here.
+    """
+    
+    """
+    infer=Fbinfer()
+    with open ("./test.c","r")as code:
+        codestring=code.read()
+    print(infer.run("c",code=codestring))
+    
+    """
+    
+    # Save test
+    with open ("./test.c","r")as code:
+        codestring=code.read()
+    print(codestring)
+    save_file(codestring,"./test-1.c")

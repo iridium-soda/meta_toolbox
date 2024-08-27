@@ -5,4 +5,3 @@ void test() {
   int *s = NULL;
   *s = 42;
 }
-
