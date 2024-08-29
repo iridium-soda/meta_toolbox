@@ -53,7 +53,7 @@ class Fbinfer:
         Raise:
             None (To be updated)
         """
-        if code_lang == "c":
+        if code_lang == "c" or code_lang == "C":
             # Send the code to the container
             # Generate a random file name for the code
             src_file_name=str(uuid.uuid4())+".c" # Local tempfile path. Use uuid to avoid conflict

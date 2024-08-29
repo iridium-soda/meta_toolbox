@@ -2,11 +2,15 @@ from loguru import logger
 import asyncio
 from metagpt.roles.di.data_interpreter import DataInterpreter
 from src.utils.update_tools import update_tools
+from src.actions import WriteReport
+
 import re
 
 async def main(requirement: str):
-    role = DataInterpreter(tools=["Fbinfer"])   # 集成工具
+    role = DataInterpreter(tools=["Fbinfer"],max_react_loop=1)   # 集成工具
+
     await role.run(requirement)
+    
 
 if __name__ == "__main__":
     # Update tools to the libs
@@ -26,5 +30,7 @@ if __name__ == "__main__":
     code = re.sub(r'(\0)', r'\\0', code)
     
     #logger.info(f"Read code from test.c:\n{code}")
-    requirement = "使用fbinfer扫描下面的代码:"+code
+    requirement = """使用fbinfer扫描下面的代码:
+    下面是待检测代码:
+    """+code
     asyncio.run(main(requirement))
