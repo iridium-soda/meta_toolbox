@@ -6,7 +6,7 @@ import uuid
 from metagpt.tools.libs.utils.utils_docker import DockerContainerManager # Deploy阶段需要修改这个,开发测试阶段写utils.utils_docker
 from loguru import logger
 from metagpt.tools.tool_registry import register_tool
-import os  
+
 
 def save_file(code:str,filename:str):
     """
@@ -93,12 +93,41 @@ class Fbinfer:
                 f"Code language {code_lang} is not implemented in fbinfer"
             )
         return output
+    def run_with_path(self,code_lang,code_path):
+        """
+        Run the fbinfer container with the path of source code and get result
+            Args:
+            str: code_lang: The programming language of the code to be analyzed.
+            str: code_path: The path of the code file to be analyzed.
+        Returns:
+            JSON: the analysis report of the code after procceed by middlwares
+        Raise:
+            None (To be updated)
+        """
+        if code_lang == "c" or code_lang == "C":
+            target_file_name = "/code.c"
+            command=f"infer run -- gcc -c {target_file_name}"
+        elif code_lang == "cpp":
+            target_file_name = "code.cpp"
+            command=f"infer run -- g++ -c {target_file_name}"
+        else:
+            logger.warning(f"Code language {code_lang} is not implemented in fbinfer")
+            raise NotImplementedError(
+                f"Code language {code_lang} is not implemented in fbinfer"
+            ) 
+
+        # NOTE: The path has been checked in the entrypoint
+        self.docker_client.send_file_to_container_by_container(self.container,code_path,target_file_name)
+        # Run the analysis
+        output = self.docker_client.exec_command_in_container(
+            container=self.container, command=command
+        )
+        
+        return output
+        
+
 
 if __name__=="__main__":
-    """
-    Simply an unitest. Dont start the container from here.
-    """
-    
     """
     infer=Fbinfer()
     with open ("./test.c","r")as code:
@@ -106,9 +135,19 @@ if __name__=="__main__":
     print(infer.run("c",code=codestring))
     
     """
+    args = sys.argv[1:]
+    if len(args) <2:
+        raise ValueError("No arguments provided")  
+    filepath,filelang=args[0],args[1] # NOTE: all other arguments are ignored
+    # Check if filepath exists
+    if not os.path.exists(filepath):
+        raise FileNotFoundError(f"File {filepath} not found")
+    # Check if filepath is a file
+    if not os.path.isfile(filepath):
+        raise FileNotFoundError(f"{filepath} is not a file")
     
-    # Save test
-    with open ("./test.c","r")as code:
-        codestring=code.read()
-    print(codestring)
-    save_file(codestring,"./test-1.c")
+    # Run the analysis
+    fbinfer=Fbinfer()
+    output=fbinfer.run_with_path(filelang,filepath)
+    logger.info(f"{output=}")
+    print(output)
