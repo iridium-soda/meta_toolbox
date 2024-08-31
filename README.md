@@ -46,8 +46,13 @@ sudo systemctl restart docker
 ## 运行
 
 本项目实现了两种实现MetaGPT调用外部工具的方法: 动作级别和角色级别(基于Data Interpreter)，两种方法的区别如下：
+| Method | Description |
+|--------|-------------|
+| Action-based | This method involves running the `main_multi.py` script, which executes MetaGPT and calls external tools at the action level. It provides a summary report of the analysis results, including any issues found and recommendations. |
+| DI-based | This method involves running the `main.py` script, which uses the Data Interpreter (DI) approach to integrate external tools with MetaGPT. It outputs the native analysis results from the external tool. |
 
-[PlaceHolder]
+> [!warning]
+> 由于MetaGPT的DI类并未实现单个角色整合调用外部工具的方法和使用LLM阅读并输出的方法，只能通过`WriteAnalysisCode`方法编写代码驱动外部工具，因此不能实现在单个角色内完成调用工具+编写报告的模式。如果需要实现，可以考虑使用多角色交互或者使用Action-based的模式。
 
 ### 基于Action的运行
 
